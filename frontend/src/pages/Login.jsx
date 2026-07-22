@@ -8,6 +8,7 @@ function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -66,17 +67,30 @@ function Login() {
                 <label className="form-label">
                   Password
                 </label>
-
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="Enter Password"
-                  value={password}
-                  onChange={(e) =>
-                    setPassword(e.target.value)
-                  }
-                  required
-                />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="form-control"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={(e) =>
+                      setPassword(e.target.value)
+                    }
+                    required
+                  />
+                  <button
+                    className="btn btn-outline-secondary"
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <div className="text-end mt-1">
+                  <Link to="/forgot-password" style={{ fontSize: "0.85rem", textDecoration: "none" }}>
+                    Forgot Password?
+                  </Link>
+                </div>
               </div>
 
               <button
