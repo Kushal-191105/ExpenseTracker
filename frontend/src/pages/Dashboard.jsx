@@ -41,10 +41,12 @@ function Dashboard() {
   const [sortBy, setSortBy] = useState("Newest");
   const [dateFilter, setDateFilter] = useState("All");
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    getExpenses();
-    getIncome();
-    getBudget();
+    Promise.all([getExpenses(), getIncome(), getBudget()]).finally(() => {
+      setLoading(false);
+    });
   }, []);
 
   const getExpenses = async () => {
