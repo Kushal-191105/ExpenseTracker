@@ -9,9 +9,11 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await API.post("/users/login", {
@@ -29,6 +31,8 @@ function Login() {
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "Login Failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -96,8 +100,9 @@ function Login() {
               <button
                 className="btn btn-primary w-100"
                 type="submit"
+                disabled={loading}
               >
-                Login
+                {loading ? "Logging in..." : "Login"}
               </button>
 
             </form>

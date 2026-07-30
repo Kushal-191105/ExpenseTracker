@@ -8,9 +8,11 @@ function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await API.post("/users/register", {
@@ -28,6 +30,8 @@ function Register() {
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Registration Failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,8 +97,9 @@ function Register() {
               <button
                 type="submit"
                 className="btn btn-success w-100"
+                disabled={loading}
               >
-                Register
+                {loading ? "Registering..." : "Register"}
               </button>
 
             </form>
