@@ -40,6 +40,7 @@ function Dashboard() {
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("Newest");
   const [dateFilter, setDateFilter] = useState("All");
+  const [accountFilter, setAccountFilter] = useState("All");
 
   const [loading, setLoading] = useState(true);
 
@@ -105,23 +106,27 @@ function Dashboard() {
     navigate("/");
   };
 
-  const totalExpense = expenses.reduce(
-    (sum, item) => sum + Number(item.amount),
-    0
-  );
 
-  const totalIncome = income.reduce(
-    (sum, item) => sum + Number(item.amount),
-    0
-  );
+  const accountBalances = useMemo(() => {
+    const acc = {};
 
-  const balance = totalIncome - totalExpense;
-  const remainingBudget = budget - totalExpense;
+    income.forEach((inv) => {
+      const acctName = inv.account || "General";
+      if (!acc[acctName]) acc[acctName] = { income: 0, expense: 0, balance: 0 };
+      acc[acctName].income += Number(inv.amount);
+      acc[acctName].balance += Number(inv.amount);
+    });
 
-const budgetPercentage =
-  budget > 0
-    ? Math.min((totalExpense / budget) * 100, 100)
-    : 0;
+    expenses.forEach((exp) => {
+      const acctName = exp.account || "General";
+      if (!acc[acctName]) acc[acctName] = { income: 0, expense: 0, balance: 0 };
+      acc[acctName].expense += Number(exp.amount);
+      acc[acctName].balance -= Number(exp.amount);
+    });
+
+    return acc;
+  }, [income, expenses]);
+
 
   const filteredExpenses = useMemo(() => {
     let data = [...expenses];
@@ -134,6 +139,10 @@ const budgetPercentage =
 
     if (category !== "All") {
       data = data.filter((expense) => expense.category === category);
+    }
+
+    if (accountFilter !== "All") {
+      data = data.filter((expense) => (expense.account || "General") === accountFilter);
     }
 
     if (dateFilter !== "All") {
@@ -191,7 +200,33 @@ const budgetPercentage =
     }
 
     return data;
-  }, [expenses, search, category, sortBy,dateFilter]);
+  }, [expenses, search, category, sortBy, dateFilter, accountFilter]);
+
+  const filteredIncomes = useMemo(() => {
+    let data = [...income];
+    if (accountFilter !== "All") {
+      data = data.filter((inv) => (inv.account || "General") === accountFilter);
+    }
+    return data;
+  }, [income, accountFilter]);
+
+  const totalExpenseFiltered = filteredExpenses.reduce(
+    (sum, item) => sum + Number(item.amount),
+    0
+  );
+
+  const totalIncomeFiltered = filteredIncomes.reduce(
+    (sum, item) => sum + Number(item.amount),
+    0
+  );
+
+  const totalExpense = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+  const totalIncome = income.reduce((sum, item) => sum + Number(item.amount), 0);
+  const balance = totalIncome - totalExpense;
+  const remainingBudget = budget - totalExpense;
+
+  const budgetPercentage =
+    budget > 0 ? Math.min((totalExpense / budget) * 100, 100) : 0;
 
   if (loading) {
     return <LoadingSpinner />;
@@ -207,8 +242,12 @@ const budgetPercentage =
           Welcome, {user?.name}
         </p>
 
-      <div className="row g-3 mb-4">
-
+      <div className="row g-3 mb-5">
+        <div className="col-12">
+          <h3 className="border-bottom pb-2">
+            Overall Summary
+          </h3>
+        </div>
         <div className="col-md-3">
           <div className="card border-success shadow-sm">
             <div className="card-body text-center">
@@ -255,9 +294,62 @@ const budgetPercentage =
 
       </div>
 
-      <div className="row mb-4">
+      {Object.entries(accountBalances)
+        .filter(([accName]) => accName !== 'General')
+        .map(([accName, accData]) => (
+        <div key={accName} className="row g-3 mb-5">
+          <div className="col-12">
+            <h3 className="border-bottom pb-2">{accName} Summary</h3>
+          </div>
+          <div className="col-md-3">
+            <div className="card border-success shadow-sm">
+              <div className="card-body text-center">
+                <h6>Total Income</h6>
+                <h4 className="text-success">
+                  ₹ {accData.income}
+                </h4>
+              </div>
+            </div>
+          </div>
 
-        <div className="col-md-3">
+          <div className="col-md-3">
+            <div className="card border-danger shadow-sm">
+              <div className="card-body text-center">
+                <h6>Total Expense</h6>
+                <h4 className="text-danger">
+                  ₹ {accData.expense}
+                </h4>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="card border-primary shadow-sm">
+              <div className="card-body text-center">
+                <h6>Current Balance</h6>
+                <h4 className="text-primary">
+                  ₹ {accData.balance}
+                </h4>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="card border-warning shadow-sm">
+              <div className="card-body text-center">
+                <h6>Savings</h6>
+                <h4 className="text-warning">
+                  ₹ {accData.balance}
+                </h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      <div className="row mb-4 align-items-center">
+
+        <div className="col-lg-4 col-md-6 mb-3">
 
           <input
             type="text"
@@ -269,7 +361,7 @@ const budgetPercentage =
 
         </div>
 
-        <div className="col-md-3">
+        <div className="col-lg-2 col-md-3 mb-3">
 
           <select
             className="form-select"
@@ -287,7 +379,7 @@ const budgetPercentage =
 
         </div>
 
-        <div className="col-md-3">
+        <div className="col-lg-2 col-md-3 mb-3">
 
           <select
             className="form-select"
@@ -301,21 +393,34 @@ const budgetPercentage =
           </select>
 
         </div>
-      <div className="col-md-3">
+        <div className="col-lg-2 col-md-3 mb-3">
 
-  <select
-    className="form-select"
-    value={dateFilter}
-    onChange={(e) => setDateFilter(e.target.value)}
-  >
-    <option>All</option>
-    <option>Today</option>
-    <option>This Week</option>
-    <option>This Month</option>
-    <option>This Year</option>
-  </select>
+          <select
+            className="form-select"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+          >
+            <option>All</option>
+            <option>Today</option>
+            <option>This Week</option>
+            <option>This Month</option>
+            <option>This Year</option>
+          </select>
 
-</div>  
+        </div>
+
+        <div className="col-lg-2 col-md-3 mb-3">
+          <select
+            className="form-select"
+            value={accountFilter}
+            onChange={(e) => setAccountFilter(e.target.value)}
+          >
+            <option value="All">All Accounts</option>
+            {Object.keys(accountBalances).map((acc) => (
+              <option key={acc} value={acc}>{acc}</option>
+            ))}
+          </select>
+        </div>  
 
       </div>
             <div className="row">
@@ -394,7 +499,7 @@ const budgetPercentage =
 
   <div className="col-lg-6">
     <IncomeList
-      income={income}
+      income={filteredIncomes}
       refreshIncome={getIncome}
       setEditingIncome={setEditingIncome}
     />
@@ -412,8 +517,8 @@ const budgetPercentage =
                 Expense Categories
               </h4>
 
-              {expenses.length > 0 ? (
-                <PieChart expenses={expenses} />
+              {filteredExpenses.length > 0 ? (
+                <PieChart expenses={filteredExpenses} />
               ) : (
                 <div className="alert alert-info">
                   No expense data available.
@@ -434,8 +539,8 @@ const budgetPercentage =
                 Category Comparison
               </h4>
 
-              {expenses.length > 0 ? (
-                <BarChart expenses={expenses} />
+              {filteredExpenses.length > 0 ? (
+                <BarChart expenses={filteredExpenses} />
               ) : (
                 <div className="alert alert-info">
                   No expense data available.
@@ -460,8 +565,8 @@ const budgetPercentage =
               <h4 className="mb-3">
                 Monthly Expense Analysis
               </h4>
-{expenses.length > 0 ? (
-  <MonthlyChart expenses={expenses} />
+{filteredExpenses.length > 0 ? (
+  <MonthlyChart expenses={filteredExpenses} />
 ) : (
   <div className="alert alert-info">
     No monthly data available.
@@ -491,8 +596,8 @@ const budgetPercentage =
         </h4>
 
         <IncomeExpenseChart
-          income={income}
-          expenses={expenses}
+          income={filteredIncomes}
+          expenses={filteredExpenses}
         />
         
 

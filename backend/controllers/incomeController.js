@@ -3,13 +3,14 @@ const Income = require("../models/Income");
 // Add Income
 const addIncome = async (req, res) => {
   try {
-    const { source, amount, date } = req.body;
+    const { source, amount, date, account } = req.body;
 
     const income = await Income.create({
       user: req.user.id,
       source,
       amount,
       date,
+      account: account || "General",
     });
 
     res.status(201).json(income);

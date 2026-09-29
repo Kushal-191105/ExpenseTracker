@@ -11,6 +11,19 @@ function ExpenseForm({
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
+  const [account, setAccount] = useState("");
+  const [customAccount, setCustomAccount] = useState("");
+
+  const majorBanks = [
+    "SBI",
+    "HDFC",
+    "ICICI",
+    "Axis Bank",
+    "PNB",
+    "Bank of Baroda",
+    "Union Bank",
+    "Slice",
+  ];
 
   useEffect(() => {
     if (editingExpense) {
@@ -18,6 +31,15 @@ function ExpenseForm({
       setAmount(editingExpense.amount);
       setCategory(editingExpense.category);
       setDate(editingExpense.date.split("T")[0]);
+
+      const savedAcc = editingExpense.account || "";
+      if (majorBanks.includes(savedAcc) || savedAcc === "") {
+        setAccount(savedAcc);
+        setCustomAccount("");
+      } else {
+        setAccount("Other");
+        setCustomAccount(savedAcc);
+      }
     } else {
       clearForm();
     }
@@ -28,6 +50,8 @@ function ExpenseForm({
     setAmount("");
     setCategory("");
     setDate("");
+    setAccount("");
+    setCustomAccount("");
   };
 
   const handleSubmit = async (e) => {
@@ -44,6 +68,7 @@ function ExpenseForm({
             amount,
             category,
             date,
+            account: account === "Other" ? customAccount : account,
           },
           {
             headers: {
@@ -61,6 +86,7 @@ function ExpenseForm({
             amount,
             category,
             date,
+            account: account === "Other" ? customAccount : account,
           },
           {
             headers: {
@@ -105,6 +131,38 @@ function ExpenseForm({
               onChange={(e) => setTitle(e.target.value)}
               required
             />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">
+              Bank Account
+            </label>
+
+            <select
+              className="form-select"
+              value={account}
+              onChange={(e) => setAccount(e.target.value)}
+              required
+            >
+              <option value="">Select Bank</option>
+              {majorBanks.map((bank) => (
+                <option key={bank} value={bank}>
+                  {bank}
+                </option>
+              ))}
+              <option value="Other">Other</option>
+            </select>
+
+            {account === "Other" && (
+              <input
+                type="text"
+                className="form-control mt-2"
+                placeholder="Enter Bank Name"
+                value={customAccount}
+                onChange={(e) => setCustomAccount(e.target.value)}
+                required
+              />
+            )}
           </div>
 
           <div className="mb-3">

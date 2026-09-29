@@ -51,6 +51,7 @@ function ExpenseList({
                   <th>Title</th>
                   <th>Amount</th>
                   <th>Category</th>
+                  <th>Account</th>
                   <th>Date</th>
                   <th>Actions</th>
                 </tr>
@@ -70,6 +71,8 @@ function ExpenseList({
                     <td>₹ {expense.amount}</td>
 
                     <td>{expense.category}</td>
+
+                    <td>{expense.account || "General"}</td>
 
                     <td>
                       {new Date(expense.date).toLocaleDateString()}

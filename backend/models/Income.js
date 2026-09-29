@@ -14,6 +14,13 @@ const incomeSchema = new mongoose.Schema(
       trim: true,
     },
 
+    account: {
+      type: String,
+      required: true,
+      default: "General",
+      trim: true,
+    },
+
     amount: {
       type: Number,
       required: true,

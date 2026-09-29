@@ -13,6 +13,13 @@ const expenseSchema = new mongoose.Schema(
       required: true,
     },
 
+    account: {
+      type: String,
+      required: true,
+      default: "General",
+      trim: true,
+    },
+
     amount: {
       type: Number,
       required: true,

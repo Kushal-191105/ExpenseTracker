@@ -49,6 +49,7 @@ function IncomeList({
                 <tr>
                   <th>#</th>
                   <th>Source</th>
+                  <th>Account</th>
                   <th>Amount</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -65,6 +66,8 @@ function IncomeList({
                     <td>{index + 1}</td>
 
                     <td>{item.source}</td>
+
+                    <td>{item.account || "General"}</td>
 
                     <td>₹ {item.amount}</td>
 
